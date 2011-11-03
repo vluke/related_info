@@ -1,0 +1,43 @@
+{% if related_uris %}
+    {% for related_uri in related_uris %}
+        {{ related_uri.uri }}
+        {{ related_uri.title }}
+        {{ related_uri.notes }}
+        {% if has_write_permissions %}
+        <a href="{% url tardis.apps.related_info.views.edit_uri experiment_id, related_uri.id %}">edit</a>
+        <a href="{% url tardis.apps.related_info.views.delete_uri experiment_id, related_uri.id %}">delete</a>
+        {% endif %}
+    {% endfor %}
+{% else %}
+    No related URIs
+{% endif %}
+
+{% if has_write_permissions %}
+    <a href="{% url tardis.apps.related_info.views.add_uri experiment_id %}">add related_uri</a>
+{% endif %}
+
+
+<hr />
+
+
+{% if related_publications %}
+    {% for related_publication in related_publications %}
+        {{ related_publication.url }}
+        {{ related_publication.title }}
+        {% if related_publication.notes %}
+            {{ related_publication.notes }}
+        {% else %}
+            No note
+        {% endif %}
+        {% if has_write_permissions %}
+            <a href="{% url tardis.apps.related_info.views.edit_publication experiment_id, related_publication.id %}">edit</a>
+            <a href="{% url tardis.apps.related_info.views.delete_publication experiment_id, related_publication.id %}">delete</a>
+        {% endif %}
+    {% endfor %}
+{% else %}
+    No related publications
+{% endif %}
+
+{% if has_write_permissions %}
+    <a href="{% url tardis.apps.related_info.views.add_publication experiment_id %}">add related publication</a>
+{% endif %}
