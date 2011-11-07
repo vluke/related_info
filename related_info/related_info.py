@@ -45,7 +45,7 @@ class RelatedInfoHandler(object):
     def publications(self):
         paramsets = ExperimentParameterSet.objects.filter(experiment=self.experiment_id, schema=self.publication_schema)
         dicts = [{
-           'uri': x.experimentparameter_set.get(name=self.pub_url_name),
+           'url': x.experimentparameter_set.get(name=self.pub_url_name),
            'title': x.experimentparameter_set.get(name=self.pub_title_name),
            'notes': _get_or_none(x.experimentparameter_set, name=self.pub_notes_name),  # notes is optional
            'id': x.id
@@ -69,6 +69,24 @@ class RelatedInfoHandler(object):
         ExperimentParameter(parameterset=eps, name=self.uri_title_name, string_value=title).save()
 
     @transaction.commit_on_success
+    def add_publication(self, cleaned_data):
+        logger.debug('adding publication')
+        logger.debug(cleaned_data)
+
+        notes = cleaned_data['notes']
+        url = cleaned_data['url']
+        title = cleaned_data['title']
+
+        eps = ExperimentParameterSet(experiment_id=self.experiment_id, schema=self.publication_schema)
+        eps.save()
+
+        ExperimentParameter(parameterset=eps, name=self.pub_url_name, string_value=url).save()
+        ExperimentParameter(parameterset=eps, name=self.pub_notes_name, string_value=notes).save()
+        ExperimentParameter(parameterset=eps, name=self.pub_title_name, string_value=title).save()
+
+
+
+    @transaction.commit_on_success
     def edit_uri(self, cleaned_data, parameterset_id):
         logger.debug('editing uri %s' % parameterset_id)
         logger.debug(cleaned_data)
@@ -83,8 +101,27 @@ class RelatedInfoHandler(object):
         _update(eps, self.uri_title_name, title)
         _update(eps, self.uri_uri_name, uri)
 
+    @transaction.commit_on_success
+    def edit_publication(self, cleaned_data, parameterset_id):
+        logger.debug('editing publication %s' % parameterset_id)
+        logger.debug(cleaned_data)
+
+        notes = cleaned_data['notes']
+        url = cleaned_data['url']
+        title = cleaned_data['title']
+
+        eps = ExperimentParameterSet(experiment_id=self.experiment_id, schema=self.publication_schema, pk=parameterset_id)
+
+        _update(eps, self.pub_notes_name, notes)
+        _update(eps, self.pub_title_name, title)
+        _update(eps, self.pub_url_name, url)
+
     def delete_uri(self, parameterset_id):
         eps = ExperimentParameterSet(experiment_id=self.experiment_id, schema=self.uri_schema, pk=parameterset_id)
+        eps.delete()
+
+    def delete_publication(self, parameterset_id):
+        eps = ExperimentParameterSet(experiment_id=self.experiment_id, schema=self.publication_schema, pk=parameterset_id)
         eps.delete()
 
     def uri_form_data(self, parameterset_id):
@@ -93,6 +130,14 @@ class RelatedInfoHandler(object):
         data['uri'] = ExperimentParameter.objects.get(parameterset=eps, name=self.uri_uri_name).string_value
         data['notes'] = ExperimentParameter.objects.get(parameterset=eps, name=self.uri_notes_name).string_value
         data['title'] = ExperimentParameter.objects.get(parameterset=eps, name=self.uri_title_name).string_value
+        return data
+
+    def publication_form_data(self, parameterset_id):
+        data = {}
+        eps = ExperimentParameterSet.objects.get(pk=parameterset_id, schema=self.publication_schema)
+        data['url'] = ExperimentParameter.objects.get(parameterset=eps, name=self.pub_url_name).string_value
+        data['notes'] = ExperimentParameter.objects.get(parameterset=eps, name=self.pub_notes_name).string_value
+        data['title'] = ExperimentParameter.objects.get(parameterset=eps, name=self.pub_title_name).string_value
         return data
         
 

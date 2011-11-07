@@ -23,13 +23,9 @@
 
     {% if related_publications %}
         {% for related_publication in related_publications %}
-            {{ related_publication.url }}
-            {{ related_publication.title }}
-            {% if related_publication.notes %}
-                {{ related_publication.notes }}
-            {% else %}
-                No note
-            {% endif %}
+            {{ related_publication.url.string_value }}
+            {{ related_publication.title.string_value }}
+            {{ related_publication.notes.string_value }}
             {% if has_write_permissions %}
                 <a href="{% url tardis.apps.related_info.views.edit_publication experiment_id related_publication.id %}">edit</a>
                 <a href="{% url tardis.apps.related_info.views.delete_publication experiment_id related_publication.id %}" class="delete">delete</a>
