@@ -1,4 +1,6 @@
-from tardis.tardis_portal.models import ExperimentParameterSet, Schema, ParameterName
+from tardis.tardis_portal.models import ExperimentParameterSet, Schema, ParameterName, ExperimentParameter
+from django.db import transaction
+import logging
 
 uri_namespace = 'http://urischema.com/'
 publication_namespace = 'http://publicationschema.com/'
@@ -10,6 +12,8 @@ uri_notes_name = 'notes'
 pub_url_name = 'url'
 pub_title_name = 'title'
 pub_notes_name = 'notes'
+
+logger = logging.getLogger(__name__)
 
 class RelatedInfoHandler(object):
     def __init__(self, experiment_id):
@@ -47,6 +51,55 @@ class RelatedInfoHandler(object):
            'id': x.id
         } for x in paramsets]
         return dicts
+
+    @transaction.commit_on_success
+    def add_uri(self, cleaned_data):
+        logger.debug('adding uri')
+        logger.debug(cleaned_data)
+
+        notes = cleaned_data['notes']
+        uri = cleaned_data['uri']
+        title = cleaned_data['title']
+
+        eps = ExperimentParameterSet(experiment_id=self.experiment_id, schema=self.uri_schema)
+        eps.save()
+
+        ExperimentParameter(parameterset=eps, name=self.uri_uri_name, string_value=uri).save()
+        ExperimentParameter(parameterset=eps, name=self.uri_notes_name, string_value=notes).save()
+        ExperimentParameter(parameterset=eps, name=self.uri_title_name, string_value=title).save()
+
+    @transaction.commit_on_success
+    def edit_uri(self, cleaned_data, parameterset_id):
+        logger.debug('editing uri %s' % parameterset_id)
+        logger.debug(cleaned_data)
+
+        notes = cleaned_data['notes']
+        uri = cleaned_data['uri']
+        title = cleaned_data['title']
+
+        eps = ExperimentParameterSet(experiment_id=self.experiment_id, schema=self.uri_schema, pk=parameterset_id)
+
+        _update(eps, self.uri_notes_name, notes)
+        _update(eps, self.uri_title_name, title)
+        _update(eps, self.uri_uri_name, uri)
+
+    def delete_uri(self, parameterset_id):
+        eps = ExperimentParameterSet(experiment_id=self.experiment_id, schema=self.uri_schema, pk=parameterset_id)
+        eps.delete()
+
+    def uri_form_data(self, parameterset_id):
+        data = {}
+        eps = ExperimentParameterSet.objects.get(pk=parameterset_id, schema=self.uri_schema)
+        data['uri'] = ExperimentParameter.objects.get(parameterset=eps, name=self.uri_uri_name).string_value
+        data['notes'] = ExperimentParameter.objects.get(parameterset=eps, name=self.uri_notes_name).string_value
+        data['title'] = ExperimentParameter.objects.get(parameterset=eps, name=self.uri_title_name).string_value
+        return data
+        
+
+def _update(parameterset, name, string_value):
+    param = ExperimentParameter.objects.get(parameterset=parameterset, name=name)
+    param.string_value = string_value
+    param.save()
 
 def _get_or_none(queryset, **kwargs):
     objs = queryset.filter(**kwargs)

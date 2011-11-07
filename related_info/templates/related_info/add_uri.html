@@ -1,5 +1,11 @@
 {% extends "tardis_portal/portal_template.html" %}
 {% block content %}
-add form here
+<form action="{{ url }}" method="POST">
+    {{ form.non_field_errors }}
+    <table>
+        {{ form.as_table }}
+    </table>
+    <input type="submit" />
+</form>
 
 {% endblock %}

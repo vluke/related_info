@@ -3,10 +3,12 @@ from django.forms.widgets import Textarea
 
 
 class RelatedUriForm(forms.Form):
-    pass
-    #custom_description = forms.CharField(required=False, widget=Textarea)
-    #custom_authors = forms.CharField(required=False)
+    uri = forms.CharField(max_length=255)
+    title = forms.CharField(max_length=255)
+    notes = forms.CharField(widget=Textarea)
 
 
 class RelatedPublicationForm(forms.Form):
-    pass
+    uri = forms.CharField(max_length=255)
+    title = forms.CharField(max_length=255)
+    notes = forms.CharField(widget=Textarea, required=False)
