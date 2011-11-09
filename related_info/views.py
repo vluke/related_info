@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.template import Context
@@ -16,10 +17,13 @@ from tardis.tardis_portal.shortcuts import render_response_index
 from . import forms
 from .related_info import RelatedInfoHandler
 
+import sys
+
 import logging
 logger = logging.getLogger(__name__)
 
-auxiliary_schema_namespace = 'http://www.tardis.edu.au/schemas/experiment/annotation/2011/07/07'
+related_info_settings = sys.modules['%s.%s.settings' % (settings.TARDIS_APP_ROOT, 'related_info')]
+auxiliary_schema_namespace = related_info_settings.RELATED_OTHER_INFO_SCHEMA_NAMESPACE
 
 def _redirect(experiment_id):
     return redirect(reverse('tardis.tardis_portal.views.view_experiment', args=[experiment_id]))

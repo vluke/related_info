@@ -1,9 +1,12 @@
-from tardis.tardis_portal.models import ExperimentParameterSet, Schema, ParameterName, ExperimentParameter
-from django.db import transaction
 import logging
 
-uri_namespace = 'http://urischema.com/'
-publication_namespace = 'http://publicationschema.com/'
+from django.conf import settings 
+from django.db import transaction
+
+from tardis.tardis_portal.models import ExperimentParameterSet, Schema, ParameterName, ExperimentParameter
+
+uri_namespace = settings.RELATED_URI_SCHEMA_NAMESPACE
+publication_namespace = settings.RELATED_PUBLICATION_SCHEMA_NAMESPACE
 
 uri_uri_name = 'uri'
 uri_title_name = 'title'
