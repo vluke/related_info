@@ -5,149 +5,109 @@ from django.db import transaction
 
 from tardis.tardis_portal.models import ExperimentParameterSet, Schema, ParameterName, ExperimentParameter
 
-uri_namespace = settings.RELATED_URI_SCHEMA_NAMESPACE
-publication_namespace = settings.RELATED_PUBLICATION_SCHEMA_NAMESPACE
+namespace = settings.RELATED_INFO_SCHEMA_NAMESPACE
 
-uri_uri_name = 'uri'
-uri_title_name = 'title'
-uri_notes_name = 'notes'
-
-pub_url_name = 'url'
-pub_title_name = 'title'
-pub_notes_name = 'notes'
+type_name = 'type'
+identifier_type_name = 'identifier_type'
+identifier_name = 'identifier'
+title_name = 'title'
+notes_name = 'notes'
 
 logger = logging.getLogger(__name__)
 
 class RelatedInfoHandler(object):
     def __init__(self, experiment_id):
         self.experiment_id = experiment_id
-        self.uri_schema = Schema.objects.get(namespace=uri_namespace)
-        self.publication_schema = Schema.objects.get(namespace=publication_namespace)
+        self.schema = Schema.objects.get(namespace=namespace)
 
-        self.uri_uri_name = ParameterName.objects.get(schema=self.uri_schema, name=uri_uri_name)
-        self.uri_title_name = ParameterName.objects.get(schema=self.uri_schema, name=uri_title_name)
-        self.uri_notes_name = ParameterName.objects.get(schema=self.uri_schema, name=uri_notes_name)
+        self.type_name = ParameterName.objects.get(schema=self.schema, name=type_name)
+        self.identifier_type_name = ParameterName.objects.get(schema=self.schema, name=identifier_type_name)
+        self.identifier_name = ParameterName.objects.get(schema=self.schema, name=identifier_name)
+        self.title_name = ParameterName.objects.get(schema=self.schema, name=title_name)
+        self.notes_name = ParameterName.objects.get(schema=self.schema, name=notes_name)
 
-        self.uri_schema = Schema.objects.get(namespace=uri_namespace)
-        self.publication_schema = Schema.objects.get(namespace=publication_namespace)
-
-        self.pub_url_name = ParameterName.objects.get(schema=self.publication_schema, name=pub_url_name)
-        self.pub_title_name = ParameterName.objects.get(schema=self.publication_schema, name=pub_title_name)
-        self.pub_notes_name = ParameterName.objects.get(schema=self.publication_schema, name=pub_notes_name)
-
-    def uris(self):
-        paramsets = ExperimentParameterSet.objects.filter(experiment=self.experiment_id, schema=self.uri_schema)
-        dicts = [{
-           'uri': x.experimentparameter_set.get(name=self.uri_uri_name),
-           'title': x.experimentparameter_set.get(name=self.uri_title_name),
-           'notes': x.experimentparameter_set.get(name=self.uri_notes_name),
-           'id': x.id
-        } for x in paramsets]
-        return dicts
-
-    def publications(self):
-        paramsets = ExperimentParameterSet.objects.filter(experiment=self.experiment_id, schema=self.publication_schema)
-        dicts = [{
-           'url': x.experimentparameter_set.get(name=self.pub_url_name),
-           'title': x.experimentparameter_set.get(name=self.pub_title_name),
-           'notes': _get_or_none(x.experimentparameter_set, name=self.pub_notes_name),  # notes is optional
-           'id': x.id
-        } for x in paramsets]
+    def info_list(self):
+        paramsets = ExperimentParameterSet.objects.filter(experiment=self.experiment_id, schema=self.schema)
+        dicts = []
+        for paramset in paramsets:
+            params = paramset.experimentparameter_set
+            dicto = {
+               'type': _get_or_none(params, name=self.type_name),
+               'identifier_type': params.get(name=self.identifier_type_name),
+               'identifier': params.get(name=self.identifier_name),
+               'title': _get_or_none(params, name=self.title_name),
+               'notes': _get_or_none(params, name=self.notes_name),
+               'id': paramset.id
+            }
+            dicts.append(dicto)
         return dicts
 
     @transaction.commit_on_success
-    def add_uri(self, cleaned_data):
-        logger.debug('adding uri')
+    def add_info(self, cleaned_data):
+        logger.debug('adding info')
         logger.debug(cleaned_data)
 
-        notes = cleaned_data['notes']
-        uri = cleaned_data['uri']
+        type = cleaned_data['type']
+        identifier_type = cleaned_data['identifier_type']
+        identifier = cleaned_data['identifier']
         title = cleaned_data['title']
+        notes = cleaned_data['notes']
 
-        eps = ExperimentParameterSet(experiment_id=self.experiment_id, schema=self.uri_schema)
+        eps = ExperimentParameterSet(experiment_id=self.experiment_id, schema=self.schema)
         eps.save()
 
-        ExperimentParameter(parameterset=eps, name=self.uri_uri_name, string_value=uri).save()
-        ExperimentParameter(parameterset=eps, name=self.uri_notes_name, string_value=notes).save()
-        ExperimentParameter(parameterset=eps, name=self.uri_title_name, string_value=title).save()
+        _maybe_add(eps, self.type_name, type)
+        _maybe_add(eps, self.identifier_type_name, identifier_type, force=True)
+        _maybe_add(eps, self.identifier_name, identifier, force=True)
+        _maybe_add(eps, self.title_name, title)
+        _maybe_add(eps, self.notes_name, notes)
 
     @transaction.commit_on_success
-    def add_publication(self, cleaned_data):
-        logger.debug('adding publication')
+    def edit_info(self, cleaned_data, parameterset_id):
+        logger.debug('editing info %s' % parameterset_id)
         logger.debug(cleaned_data)
 
-        notes = cleaned_data['notes']
-        url = cleaned_data['url']
+        type = cleaned_data['type']
+        identifier_type = cleaned_data['identifier_type']
+        identifier = cleaned_data['identifier']
         title = cleaned_data['title']
-
-        eps = ExperimentParameterSet(experiment_id=self.experiment_id, schema=self.publication_schema)
-        eps.save()
-
-        ExperimentParameter(parameterset=eps, name=self.pub_url_name, string_value=url).save()
-        ExperimentParameter(parameterset=eps, name=self.pub_notes_name, string_value=notes).save()
-        ExperimentParameter(parameterset=eps, name=self.pub_title_name, string_value=title).save()
-
-
-
-    @transaction.commit_on_success
-    def edit_uri(self, cleaned_data, parameterset_id):
-        logger.debug('editing uri %s' % parameterset_id)
-        logger.debug(cleaned_data)
-
         notes = cleaned_data['notes']
-        uri = cleaned_data['uri']
-        title = cleaned_data['title']
 
-        eps = ExperimentParameterSet(experiment_id=self.experiment_id, schema=self.uri_schema, pk=parameterset_id)
+        eps = ExperimentParameterSet(experiment_id=self.experiment_id, schema=self.schema, pk=parameterset_id)
 
-        _update(eps, self.uri_notes_name, notes)
-        _update(eps, self.uri_title_name, title)
-        _update(eps, self.uri_uri_name, uri)
+        _update(eps, self.type_name, type)
+        _update(eps, self.identifier_type_name, identifier_type)
+        _update(eps, self.identifier_name, identifier)
+        _update(eps, self.title_name, title)
+        _update(eps, self.notes_name, notes)
 
-    @transaction.commit_on_success
-    def edit_publication(self, cleaned_data, parameterset_id):
-        logger.debug('editing publication %s' % parameterset_id)
-        logger.debug(cleaned_data)
 
-        notes = cleaned_data['notes']
-        url = cleaned_data['url']
-        title = cleaned_data['title']
-
-        eps = ExperimentParameterSet(experiment_id=self.experiment_id, schema=self.publication_schema, pk=parameterset_id)
-
-        _update(eps, self.pub_notes_name, notes)
-        _update(eps, self.pub_title_name, title)
-        _update(eps, self.pub_url_name, url)
-
-    def delete_uri(self, parameterset_id):
-        eps = ExperimentParameterSet(experiment_id=self.experiment_id, schema=self.uri_schema, pk=parameterset_id)
+    def delete_info(self, parameterset_id):
+        eps = ExperimentParameterSet(experiment_id=self.experiment_id, schema=self.schema, pk=parameterset_id)
         eps.delete()
 
-    def delete_publication(self, parameterset_id):
-        eps = ExperimentParameterSet(experiment_id=self.experiment_id, schema=self.publication_schema, pk=parameterset_id)
-        eps.delete()
-
-    def uri_form_data(self, parameterset_id):
+    def form_data(self, parameterset_id):
         data = {}
-        eps = ExperimentParameterSet.objects.get(pk=parameterset_id, schema=self.uri_schema)
-        data['uri'] = ExperimentParameter.objects.get(parameterset=eps, name=self.uri_uri_name).string_value
-        data['notes'] = ExperimentParameter.objects.get(parameterset=eps, name=self.uri_notes_name).string_value
-        data['title'] = ExperimentParameter.objects.get(parameterset=eps, name=self.uri_title_name).string_value
-        return data
-
-    def publication_form_data(self, parameterset_id):
-        data = {}
-        eps = ExperimentParameterSet.objects.get(pk=parameterset_id, schema=self.publication_schema)
-        data['url'] = ExperimentParameter.objects.get(parameterset=eps, name=self.pub_url_name).string_value
-        data['notes'] = ExperimentParameter.objects.get(parameterset=eps, name=self.pub_notes_name).string_value
-        data['title'] = ExperimentParameter.objects.get(parameterset=eps, name=self.pub_title_name).string_value
+        params = ExperimentParameter.objects.filter(parameterset=parameterset_id, parameterset__schema=self.schema).values('string_value', 'name__name')
+        for param in params:
+            data[param['name__name']] = param['string_value']
         return data
         
 
 def _update(parameterset, name, string_value):
-    param = ExperimentParameter.objects.get(parameterset=parameterset, name=name)
-    param.string_value = string_value
-    param.save()
+    param = _get_or_none(ExperimentParameter.objects.all(), parameterset=parameterset, name=name)
+    if string_value:
+        if not param:
+            param = ExperimentParameter(parameterset=parameterset, name=name)
+        param.string_value = string_value
+        param.save()
+    else:
+        if param:
+            param.delete()
+
+def _maybe_add(eps, name, value, force=False):
+    if value or force:
+        ExperimentParameter(parameterset=eps, name=name, string_value=value).save()
 
 def _get_or_none(queryset, **kwargs):
     objs = queryset.filter(**kwargs)

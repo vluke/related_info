@@ -32,95 +32,52 @@ def _redirect(experiment_id):
 @never_cache
 @authz.experiment_access_required
 def index(request, experiment_id):
-    url = 'related_info/index.html'
+    template = 'related_info/index.html'
     c = Context()
     if request.user.is_authenticated():
         c['has_write_permissions'] = authz.has_write_permissions(request, experiment_id)
 
     rih = RelatedInfoHandler(experiment_id)
-    c['related_uris'] = rih.uris()
-    c['related_publications'] = rih.publications()
+    c['related_info_list'] = rih.info_list()
     c['experiment_id'] = int(experiment_id)
-
     c['other_info'] = ExperimentParameter.objects.filter(name__schema__namespace=auxiliary_schema_namespace, parameterset__experiment=experiment_id)
 
-    uris = RelatedInfoHandler(experiment_id)
-
-    return HttpResponse(render_response_index(request, url, c))
+    return HttpResponse(render_response_index(request, template, c))
 
 @authz.write_permissions_required
-def add_uri(request, experiment_id):
-    url = 'related_info/add_uri.html'
+def add_info(request, experiment_id):
+    template = 'related_info/info.html'
     c = Context()
     if request.POST:
-        form = forms.RelatedUriForm(request.POST)
+        form = forms.RelatedInfoForm(request.POST)
         if form.is_valid():
-            RelatedInfoHandler(experiment_id).add_uri(form.cleaned_data)
+            RelatedInfoHandler(experiment_id).add_info(form.cleaned_data)
             return _redirect(experiment_id)
     else:
-        form = forms.RelatedUriForm()
-    c['url'] = reverse('tardis.apps.related_info.views.add_uri', args=[experiment_id])
+        form = forms.RelatedInfoForm()
+    c['url'] = reverse('tardis.apps.related_info.views.add_info', args=[experiment_id])
     c['form'] = form
-    return HttpResponse(render_response_index(request, url, c))
-    
+    return HttpResponse(render_response_index(request, template, c))
 
 @authz.write_permissions_required
-def add_publication(request, experiment_id):
-    url = 'related_info/add_publication.html'
-    c = Context()
-    if request.POST:
-        form = forms.RelatedPublicationForm(request.POST)
-        if form.is_valid():
-            RelatedInfoHandler(experiment_id).add_publication(form.cleaned_data)
-            return _redirect(experiment_id)
-    else:
-        form = forms.RelatedPublicationForm()
-    c['url'] = reverse('tardis.apps.related_info.views.add_publication', args=[experiment_id])
-    c['form'] = form
-    return HttpResponse(render_response_index(request, url, c))
-
-@authz.write_permissions_required
-def edit_uri(request, experiment_id, parameterset_id):
+def edit_info(request, experiment_id, parameterset_id):
+    template = 'related_info/info.html'
     c = Context()
     rih = RelatedInfoHandler(experiment_id)
     if request.POST:
-        form = forms.RelatedUriForm(request.POST)
+        form = forms.RelatedInfoForm(request.POST)
         if form.is_valid():
-            rih.edit_uri(form.cleaned_data, parameterset_id)
+            rih.edit_info(form.cleaned_data, parameterset_id)
             return _redirect(experiment_id)
     else:
-        form = forms.RelatedUriForm(initial=rih.uri_form_data(parameterset_id))
+        form = forms.RelatedInfoForm(initial=rih.form_data(parameterset_id))
     c['form'] = form
-    c['url'] = reverse('tardis.apps.related_info.views.edit_uri', args=[experiment_id, parameterset_id])
-    url = 'related_info/add_uri.html'
-    return HttpResponse(render_response_index(request, url, c))
-
-@authz.write_permissions_required
-def edit_publication(request, experiment_id, parameterset_id):
-    c = Context()
-    rih = RelatedInfoHandler(experiment_id)
-    if request.POST:
-        form = forms.RelatedPublicationForm(request.POST)
-        if form.is_valid():
-            rih.edit_publication(form.cleaned_data, parameterset_id)
-            return _redirect(experiment_id)
-    else:
-        form = forms.RelatedPublicationForm(initial=rih.publication_form_data(parameterset_id))
-    c['form'] = form
-    c['url'] = reverse('tardis.apps.related_info.views.edit_publication', args=[experiment_id, parameterset_id])
-    url = 'related_info/add_publication.html'
-    return HttpResponse(render_response_index(request, url, c))
+    c['url'] = reverse('tardis.apps.related_info.views.edit_info', args=[experiment_id, parameterset_id])
+    return HttpResponse(render_response_index(request, template, c))
 
 @require_POST
 @authz.write_permissions_required
-def delete_uri(request, experiment_id, parameterset_id):
+def delete_info(request, experiment_id, parameterset_id):
     rih = RelatedInfoHandler(experiment_id)
-    rih.delete_uri(parameterset_id)
-    return HttpResponse('{"success": true}', mimetype='application/json');
-
-@require_POST
-@authz.write_permissions_required
-def delete_publication(request, experiment_id, parameterset_id):
-    rih = RelatedInfoHandler(experiment_id)
-    rih.delete_publication(parameterset_id)
+    rih.delete_info(parameterset_id)
     return HttpResponse('{"success": true}', mimetype='application/json');

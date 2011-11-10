@@ -1,39 +1,47 @@
 [
     {
-        "pk": 13, 
-        "model": "tardis_portal.schema", 
-        "fields": {
-            "type": 1, 
-            "namespace": "http://www.tardis.edu.au/schemas/related_publication/2011/11/09", 
-            "name": "related publication info schema", 
-            "subtype": ""
-        }
-    }, 
-    {
         "pk": 12, 
         "model": "tardis_portal.schema", 
         "fields": {
             "type": 1, 
-            "namespace": "http://www.tardis.edu.au/schemas/related_uri/2011/11/09", 
-            "name": "related uri info schema", 
+            "namespace": "http://www.tardis.edu.au/schemas/related_info/2011/11/10", 
+            "name": "Related Information", 
             "subtype": ""
         }
     }, 
     {
-        "pk": 126, 
+        "pk": 121, 
         "model": "tardis_portal.parametername", 
         "fields": {
-            "name": "notes", 
-            "data_type": 7, 
+            "name": "identifier", 
+            "data_type": 2, 
             "is_searchable": false, 
             "choices": "", 
             "comparison_type": 1, 
-            "full_name": "notes", 
+            "full_name": "Identifier", 
             "units": "", 
             "order": 9999, 
             "immutable": false, 
             "schema": [
-                "http://www.tardis.edu.au/schemas/related_publication/2011/11/09"
+                "http://www.tardis.edu.au/schemas/related_info/2011/11/10"
+            ]
+        }
+    }, 
+    {
+        "pk": 127, 
+        "model": "tardis_portal.parametername", 
+        "fields": {
+            "name": "identifier_type", 
+            "data_type": 2, 
+            "is_searchable": false, 
+            "choices": "", 
+            "comparison_type": 1, 
+            "full_name": "Identifier Type", 
+            "units": "", 
+            "order": 9999, 
+            "immutable": false, 
+            "schema": [
+                "http://www.tardis.edu.au/schemas/related_info/2011/11/10"
             ]
         }
     }, 
@@ -46,30 +54,12 @@
             "is_searchable": false, 
             "choices": "", 
             "comparison_type": 1, 
-            "full_name": "notes", 
+            "full_name": "Notes", 
             "units": "", 
             "order": 9999, 
             "immutable": false, 
             "schema": [
-                "http://www.tardis.edu.au/schemas/related_uri/2011/11/09"
-            ]
-        }
-    }, 
-    {
-        "pk": 125, 
-        "model": "tardis_portal.parametername", 
-        "fields": {
-            "name": "title", 
-            "data_type": 2, 
-            "is_searchable": false, 
-            "choices": "", 
-            "comparison_type": 1, 
-            "full_name": "title", 
-            "units": "", 
-            "order": 9999, 
-            "immutable": false, 
-            "schema": [
-                "http://www.tardis.edu.au/schemas/related_publication/2011/11/09"
+                "http://www.tardis.edu.au/schemas/related_info/2011/11/10"
             ]
         }
     }, 
@@ -82,48 +72,30 @@
             "is_searchable": false, 
             "choices": "", 
             "comparison_type": 1, 
-            "full_name": "title", 
+            "full_name": "Title", 
             "units": "", 
             "order": 9999, 
             "immutable": false, 
             "schema": [
-                "http://www.tardis.edu.au/schemas/related_uri/2011/11/09"
+                "http://www.tardis.edu.au/schemas/related_info/2011/11/10"
             ]
         }
     }, 
     {
-        "pk": 121, 
+        "pk": 128, 
         "model": "tardis_portal.parametername", 
         "fields": {
-            "name": "uri", 
+            "name": "type", 
             "data_type": 2, 
             "is_searchable": false, 
             "choices": "", 
             "comparison_type": 1, 
-            "full_name": "uri", 
+            "full_name": "Type", 
             "units": "", 
             "order": 9999, 
             "immutable": false, 
             "schema": [
-                "http://www.tardis.edu.au/schemas/related_uri/2011/11/09"
-            ]
-        }
-    }, 
-    {
-        "pk": 124, 
-        "model": "tardis_portal.parametername", 
-        "fields": {
-            "name": "url", 
-            "data_type": 3, 
-            "is_searchable": false, 
-            "choices": "", 
-            "comparison_type": 1, 
-            "full_name": "URL", 
-            "units": "", 
-            "order": 9999, 
-            "immutable": false, 
-            "schema": [
-                "http://www.tardis.edu.au/schemas/related_publication/2011/11/09"
+                "http://www.tardis.edu.au/schemas/related_info/2011/11/10"
             ]
         }
     }
