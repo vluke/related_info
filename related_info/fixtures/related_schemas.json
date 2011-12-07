@@ -1,16 +1,17 @@
 [
     {
-        "pk": 12, 
+        "pk": 23, 
         "model": "tardis_portal.schema", 
         "fields": {
             "type": 1, 
             "namespace": "http://www.tardis.edu.au/schemas/related_info/2011/11/10", 
             "name": "Related Information", 
+            "immutable": true, 
             "subtype": ""
         }
     }, 
     {
-        "pk": 121, 
+        "pk": 250, 
         "model": "tardis_portal.parametername", 
         "fields": {
             "name": "identifier", 
@@ -28,7 +29,7 @@
         }
     }, 
     {
-        "pk": 127, 
+        "pk": 251, 
         "model": "tardis_portal.parametername", 
         "fields": {
             "name": "identifier_type", 
@@ -46,7 +47,7 @@
         }
     }, 
     {
-        "pk": 123, 
+        "pk": 252, 
         "model": "tardis_portal.parametername", 
         "fields": {
             "name": "notes", 
@@ -64,7 +65,7 @@
         }
     }, 
     {
-        "pk": 122, 
+        "pk": 253, 
         "model": "tardis_portal.parametername", 
         "fields": {
             "name": "title", 
@@ -82,7 +83,7 @@
         }
     }, 
     {
-        "pk": 128, 
+        "pk": 254, 
         "model": "tardis_portal.parametername", 
         "fields": {
             "name": "type", 
